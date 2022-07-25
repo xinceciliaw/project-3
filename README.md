@@ -3,3 +3,6 @@
 # List of Packages used
 
 # Run the App
+```
+shiny::runGitHub(repo = "project-3", username = "xinceciliaw")
+```
