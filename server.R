@@ -1,9 +1,18 @@
 
 
 library(shiny)
+library(DT)
+library(caret)
+library(tree)
+library(randomForest)
+library(tidyverse)
+
+dat <- read_csv("breastfeeding.csv")
+dat
+
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
 
     output$distPlot <- renderPlot({
 

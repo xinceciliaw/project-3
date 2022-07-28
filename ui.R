@@ -1,6 +1,7 @@
 
 library(shinydashboard)
 library(shiny)
+library(DT)
 
 # create sidebar 
 sidebar <- dashboardSidebar(
@@ -156,6 +157,15 @@ body <- dashboardBody(
                                        label = "Infant Mortality (per 1K)",
                                        min = 0, max = 40, value = c(0, 40))
                          ),
+                         checkboxInput("filtervar_ibclc",
+                                       "Filter by Range of IBCLC",
+                                       value = FALSE),
+                         conditionalPanel(
+                           condition = "input.filtervar_ibclc == 1",
+                           sliderInput("explore_filtervar_ibclc",
+                                       label = "IBCLC (per 1K)",
+                                       min = 0, max = 50, value = c(0, 50))
+                         ),
                          checkboxInput("filtervar_rucc",
                                        "Filter by Range of Rural-Urban Continuum Code",
                                        value = FALSE),
@@ -190,7 +200,74 @@ body <- dashboardBody(
               tabPanel("Model Fitting"),
               tabPanel("Model Prediction")
             )),
-    tabItem(tabName = "data")
+    tabItem(tabName = "data",
+            fluidRow(
+              column(3,
+                     box(width = 12,
+                         title = "Select Variables",
+                         status = "primary",
+                         solidHeader = TRUE,
+                         collapsible = TRUE,
+                         checkboxGroupInput("select_var",
+                                            "Selection",
+                                            choices = list(
+                                              "Breastfeeding Initiation" = "bf_pct",
+                                              "Infant Mortality" = "im_rate",
+                                              "IBCLC" = "ibclc_rate",
+                                              "La Leche League" = "la_leche_in_county",
+                                              "Baby-Friendly Hospital" = "baby_friendly_in_county",
+                                              "WIC program site" = "wic_site_in_county",
+                                              "Rural-Urban Continuum Code" = "rucc",
+                                              "Social Vulnerability Index" = "svi"),
+                                            selected = list(
+                                              "Breastfeeding Initiation" = "bf_pct",
+                                              "Infant Mortality" = "im_rate",
+                                              "IBCLC" = "ibclc_rate",
+                                              "La Leche League" = "la_leche_in_county"))),
+                     box(width = 12,
+                         title = "Filter Variables",
+                         status = "primary",
+                         solidHeader = TRUE,
+                         collapsible = TRUE,
+                         sliderInput(
+                           "filter_bi",
+                           "Breastfeeding Initiation (%)",
+                           min = 0, max = 100, value = c(0, 100)),
+                         sliderInput(
+                           "filter_im",
+                           "Infant Mortality (per 1K)",
+                           min = 0, max = 40, value = c(0, 40)),
+                         sliderInput(
+                           "filter_ibclc",
+                           "IBCLC (per 1K)",
+                           min = 0, max = 50, value = c(0, 50)),
+                         sliderInput(
+                           "filter_laleche",
+                           "La Leche League (count)",
+                           min = 0, max = 15, value = c(0, 15)),
+                         sliderInput(
+                           "filter_babyhospital",
+                           "Baby-Friendly Hospital (count)",
+                           min = 0, max = 10, value = c(0, 10)),
+                         sliderInput(
+                           "filter_wic",
+                           "WIC program site (count)",
+                           min = 0, max = 15, value = c(0, 15)),
+                         sliderInput(
+                           "filter_rucc",
+                           "Rural-Urban Continuum Code",
+                           min = 1, max = 9, value = c(1, 9)),
+                         sliderInput(
+                           "filter_svi",
+                           "Social Vulnerability Index",
+                           min = 0, max = 100, value = c(0, 100)),
+                         )),
+              column(9,
+                     DTOutput(outputId = "dt_table"),
+                     br(),
+                     downloadButton(outputId = "dt_download", label = "Data Download"))
+            )
+            )
   )
 )
 
