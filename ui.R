@@ -74,7 +74,7 @@ body <- dashboardBody(
                                    choices = list("Density",
                                                   "Bar")),
                        conditionalPanel(
-                         condition = "input.plots == 'Density'",
+                         condition = "input.plots == Density",
                          selectInput("densityx",
                                      "Select a variable",
                                      choices = list(
@@ -85,15 +85,15 @@ body <- dashboardBody(
                                        "Social Vulnerability Index" = "svi"),
                                      selected = "ibclc_rate")),
                        conditionalPanel(
-                         condition = "input.plots == 'Bar'",
+                         condition = "input.plots == Bar",
                          selectInput("barx",
                                      "Select a variable",
                                      choices = list(
-                                       "La Leche League" = "la_leche_in_county",
-                                       "Baby-Friendly Hospital" = "baby_friendly_in_county",
-                                       "WIC program site" = "wic_site_in_county",
+                                       "La Leche League" = "la_leche_count",
+                                       "Baby-Friendly Hospital" = "baby_friendly_count",
+                                       "WIC program site" = "wic_site_count",
                                        "Rural-Urban Continuum Code" = "rucc"),
-                                     selected = "la_leche_in_county")
+                                     selected = "la_leche_count")
                        )
                      ),
                      box(width = 12, 
@@ -184,7 +184,16 @@ body <- dashboardBody(
                                        label = "Social Vulnerability Index",
                                        min = 0, max = 100, value = c(0, 100))
                          )
+                         )),
+              column(9,
+                     box(width = 12,
+                         plotOutput(
+                           outputId = "explore_plot"
                          ))
+                     ),
+              column(9,
+                     h4("Numerical Summaries"),
+                     dataTableOutput(outputId = "explore_numerical_summary"))
             )),
     tabItem(tabName = "modeling",
             tabsetPanel(
@@ -366,16 +375,16 @@ body <- dashboardBody(
                                               "Breastfeeding Initiation" = "bf_pct",
                                               "Infant Mortality" = "im_rate",
                                               "IBCLC" = "ibclc_rate",
-                                              "La Leche League" = "la_leche_in_county",
-                                              "Baby-Friendly Hospital" = "baby_friendly_in_county",
-                                              "WIC program site" = "wic_site_in_county",
+                                              "La Leche League" = "la_leche_count",
+                                              "Baby-Friendly Hospital" = "baby_friendly_count",
+                                              "WIC program site" = "wic_site_count",
                                               "Rural-Urban Continuum Code" = "rucc",
                                               "Social Vulnerability Index" = "svi"),
                                             selected = list(
                                               "Breastfeeding Initiation" = "bf_pct",
                                               "Infant Mortality" = "im_rate",
                                               "IBCLC" = "ibclc_rate",
-                                              "La Leche League" = "la_leche_in_county"))),
+                                              "La Leche League" = "la_leche_count"))),
                      box(width = 12,
                          title = "Filter Variables",
                          status = "primary",
