@@ -105,7 +105,7 @@ body <- dashboardBody(
                          selectInput("numsumary",
                                      "Select Summary Type",
                                      choices = list("Summary Statistics",
-                                                    "Frequency Table")),
+                                                    "Correlation Table")),
                          conditionalPanel(
                            condition = "input.numsumary == 'Summary Statistics'",
                            selectInput("fivenum",
@@ -122,15 +122,23 @@ body <- dashboardBody(
                                        selected = "bf_pct")
                          ),
                          conditionalPanel(
-                           condition = "input.numsumary == 'Frequency Table'",
-                           selectInput("Frequency",
-                                       "Select a variable",
+                           condition = "input.numsumary == 'Correlation Table'",
+                           selectInput("Correlation",
+                                       "Select Variable(s) to See Correlation",
                                        choices = list(
+                                         "Breastfeeding Initiation" = "bf_pct",
+                                         "Infant Mortality" = "im_rate",
+                                         "IBCLC" = "ibclc_rate",
                                          "La Leche League" = "la_leche_count",
                                          "Baby-Friendly Hospital" = "baby_friendly_count",
                                          "WIC program site" = "wic_site_count",
-                                         "Rural-Urban Continuum Code" = "rucc"),
-                                       selected = "bf_pct")
+                                         "Rural-Urban Continuum Code" = "rucc",
+                                         "Social Vulnerability Index" = "svi"),
+                                       selected = list(
+                                         "Breastfeeding Initiation" = "bf_pct",
+                                         "IBCLC" = "ibclc_rate",
+                                         "La Leche League" = "la_leche_count"
+                                       ))
                          )
                          
                          ),
@@ -165,6 +173,33 @@ body <- dashboardBody(
                            sliderInput("explore_filtervar_ibclc",
                                        label = "IBCLC (per 1K)",
                                        min = 0, max = 50, value = c(0, 50))
+                         ),
+                         checkboxInput("filtervar_laleche",
+                                       "Filter by Range of La-Leche League",
+                                       value = FALSE),
+                         conditionalPanel(
+                           condition = "input.filtervar_laleche == 1",
+                           sliderInput("explore_filtervar_laleche",
+                                       label = "La Leche League (count)",
+                                       min = 0, max = 11, value = c(0, 11))
+                         ),
+                         checkboxInput("filtervar_babyhospitcal",
+                                       "Filter by Range of Baby-Friendly Hospital",
+                                       value = FALSE),
+                         conditionalPanel(
+                           condition = "input.filtervar_babyhospitcal == 1",
+                           sliderInput("explore_filtervar_babyhospitcal",
+                                       label = "Baby-Friendly Hospital (count)",
+                                       min = 0, max = 7, value = c(0, 7))
+                         ),
+                         checkboxInput("filtervar_wic",
+                                       "Filter by Range of WIC program site",
+                                       value = FALSE),
+                         conditionalPanel(
+                           condition = "input.filtervar_wic == 1",
+                           sliderInput("explore_filtervar_wic",
+                                       label = "WIC program site (count)",
+                                       min = 0, max = 15, value = c(0, 15))
                          ),
                          checkboxInput("filtervar_rucc",
                                        "Filter by Range of Rural-Urban Continuum Code",

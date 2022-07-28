@@ -59,33 +59,60 @@ shinyServer(function(input, output, session) {
       }
     ) # end download
     
+    explore_data <- reactive({
+      explore_data <- dat %>% 
+        filter(
+          (bf_pct <= (input$explore_filtervar_bi[2])) &
+            (bf_pct >= (input$explore_filtervar_bi[1]))) %>% 
+        filter(
+          (im_rate <= (input$explore_filtervar_im[2])) &
+            (im_rate >= (input$explore_filtervar_im[1]))) %>% 
+        filter(
+          (ibclc_rate <= (input$explore_filtervar_ibclc[2])) &
+            (ibclc_rate >= (input$explore_filtervar_ibclc[1]))) %>%
+        filter(
+          (la_leche_count <= (input$explore_filtervar_laleche[2])) &
+            (la_leche_count >= (input$explore_filtervar_laleche[1]))) %>%
+        filter(
+          (baby_friendly_count <= (input$explore_filtervar_babyhospitcal[2])) &
+            (baby_friendly_count >= (input$explore_filtervar_babyhospitcal[1]))) %>%
+        filter(
+          (wic_site_count <= (input$explore_filtervar_wic[2])) &
+            (wic_site_count >= (input$explore_filtervar_wic[1]))) %>%
+        filter(
+          (rucc <= (input$explore_filtervar_rucc[2])) &
+            (rucc >= (input$explore_filtervar_rucc[1]))) %>%
+        filter(
+          (svi <= (input$explore_filtervar_svi[2])) &
+            (svi >= (input$explore_filtervar_svi[1])))
+    })
+    
     
     output$explore_plot <- renderPlotly({
-      get_dat <- get_dat()
+      explore_data <- explore_data()
       if(input$plots == "Density"){
-        ggplot(get_dat, 
+        ggplot(explore_data, 
                aes_string(x = input$densityx)) + 
           geom_density(position = "identity", alpha = 0.3) 
       }
       else if(input$plots == "Bar"){
-        ggplot(get_dat, aes_string(x = input$barx)) + 
+        ggplot(explore_data, aes_string(x = input$barx)) + 
           geom_bar(aes(), position = "dodge") 
       }
       
     }) #end explore plot
     
     numerical_summary_output <- reactive({
-      get_dat <- get_dat()
+      explore_data <- explore_data()
       if(input$numsumary == "Summary Statistics"){
-        explore_summary_variable <- get_dat %>% select(input$fivenum) %>% pull()
+        explore_summary_variable <- explore_data %>% select(input$fivenum) %>% pull()
         explore_summary_output <- c(summary(explore_summary_variable), 
                                     "St.Dev."=sd(explore_summary_variable)) %>% 
           t() %>% as.data.frame(row.names = as.character(input$fivenum)) %>% round(4)
       }
-      else if (input$numsumary == "Frequency Table"){
-        kable_output <- get_dat %>% select(input$Frequency) %>% pull()
-        table() %>% as.data.frame()
-        explore_summary_output <- kable_output
+      else if (input$numsumary == "Correlation Table"){
+        explore_summary_output <- explore_data %>% select(input$Correlation) %>% 
+          cor(method = "pearson") %>% round(4)
       }
       return(explore_summary_output)
     })
