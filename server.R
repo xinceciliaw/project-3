@@ -9,6 +9,7 @@ library(randomForest)
 library(tidyverse)
 
 
+
 dat <- read_csv("breastfeeding.csv")
 
 
@@ -59,7 +60,7 @@ shinyServer(function(input, output, session) {
     ) # end download
     
     
-    output$explore_plot <- renderPlot({
+    output$explore_plot <- renderPlotly({
       get_dat <- get_dat()
       if(input$plots == "Density"){
         ggplot(get_dat, 
@@ -72,4 +73,23 @@ shinyServer(function(input, output, session) {
       }
       
     }) #end explore plot
+    
+    numerical_summary_output <- reactive({
+      get_dat <- get_dat()
+      if(input$numsumary == "Summary Statistics"){
+        explore_summary_variable <- get_dat %>% select(input$fivenum) %>% pull()
+        explore_summary_output <- c(summary(explore_summary_variable), 
+                                    "St.Dev."=sd(explore_summary_variable)) %>% 
+          t() %>% as.data.frame(row.names = as.character(input$fivenum)) %>% round(4)
+      }
+      else if (input$numsumary == "Frequency Table"){
+        kable_output <- get_dat %>% select(input$Frequency) %>% pull()
+        table() %>% as.data.frame()
+        explore_summary_output <- kable_output
+      }
+      return(explore_summary_output)
+    })
+    output$explore_numerical_summary <- renderDataTable({
+      numerical_summary_output <- numerical_summary_output()
+    })
 })

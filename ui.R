@@ -2,6 +2,7 @@
 library(shinydashboard)
 library(shiny)
 library(DT)
+library(plotly)
 
 # create sidebar 
 sidebar <- dashboardSidebar(
@@ -74,7 +75,7 @@ body <- dashboardBody(
                                    choices = list("Density",
                                                   "Bar")),
                        conditionalPanel(
-                         condition = "input.plots == Density",
+                         condition = "input.plots == 'Density'",
                          selectInput("densityx",
                                      "Select a variable",
                                      choices = list(
@@ -85,7 +86,7 @@ body <- dashboardBody(
                                        "Social Vulnerability Index" = "svi"),
                                      selected = "ibclc_rate")),
                        conditionalPanel(
-                         condition = "input.plots == Bar",
+                         condition = "input.plots == 'Bar'",
                          selectInput("barx",
                                      "Select a variable",
                                      choices = list(
@@ -104,7 +105,7 @@ body <- dashboardBody(
                          selectInput("numsumary",
                                      "Select Summary Type",
                                      choices = list("Summary Statistics",
-                                                    "Contingency Table")),
+                                                    "Frequency Table")),
                          conditionalPanel(
                            condition = "input.numsumary == 'Summary Statistics'",
                            selectInput("fivenum",
@@ -113,9 +114,9 @@ body <- dashboardBody(
                                          "Breastfeeding Initiation" = "bf_pct",
                                          "Infant Mortality" = "im_rate",
                                          "IBCLC" = "ibclc_rate",
-                                         "La Leche League" = "la_leche_in_county",
-                                         "Baby-Friendly Hospital" = "baby_friendly_in_county",
-                                         "WIC program site" = "wic_site_in_county",
+                                         "La Leche League" = "la_leche_count",
+                                         "Baby-Friendly Hospital" = "baby_friendly_count",
+                                         "WIC program site" = "wic_site_count",
                                          "Rural-Urban Continuum Code" = "rucc",
                                          "Social Vulnerability Index" = "svi"),
                                        selected = "bf_pct")
@@ -125,11 +126,10 @@ body <- dashboardBody(
                            selectInput("Frequency",
                                        "Select a variable",
                                        choices = list(
-                                         "La Leche League" = "la_leche_in_county",
-                                         "Baby-Friendly Hospital" = "baby_friendly_in_county",
-                                         "WIC program site" = "wic_site_in_county",
-                                         "Rural-Urban Continuum Code" = "rucc",
-                                         "Social Vulnerability Index" = "svi"),
+                                         "La Leche League" = "la_leche_count",
+                                         "Baby-Friendly Hospital" = "baby_friendly_count",
+                                         "WIC program site" = "wic_site_count",
+                                         "Rural-Urban Continuum Code" = "rucc"),
                                        selected = "bf_pct")
                          )
                          
@@ -187,7 +187,7 @@ body <- dashboardBody(
                          )),
               column(9,
                      box(width = 12,
-                         plotOutput(
+                         plotlyOutput(
                            outputId = "explore_plot"
                          ))
                      ),
