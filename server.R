@@ -118,5 +118,11 @@ shinyServer(function(input, output, session) {
     })
     output$explore_numerical_summary <- renderDataTable({
       numerical_summary_output <- numerical_summary_output()
-    })
+      datatable(numerical_summary_output, options = list(scrollX = T))
+    }) #end tables
+    
+    
 })
+
+
+

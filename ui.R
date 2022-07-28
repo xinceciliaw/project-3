@@ -123,7 +123,7 @@ body <- dashboardBody(
                          ),
                          conditionalPanel(
                            condition = "input.numsumary == 'Correlation Table'",
-                           selectInput("Correlation",
+                           checkboxGroupInput("Correlation",
                                        "Select Variable(s) to See Correlation",
                                        choices = list(
                                          "Breastfeeding Initiation" = "bf_pct",
