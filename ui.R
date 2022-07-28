@@ -175,7 +175,22 @@ body <- dashboardBody(
                                        min = 0, max = 100, value = c(0, 100))
                          )
                          ))
-            ))
+            )),
+    tabItem(tabName = "modeling",
+            tabsetPanel(
+              tabPanel("Model Introduction",
+                       h3("Multiple Linear Regression Model"),
+                       h4("blablabla"),
+                       br(),
+                       h3("Regression Tree Model"),
+                       h4("more blabla"),
+                       br(),
+                       h3("Random Forest Model"),
+                       h4("bllaaa")),
+              tabPanel("Model Fitting"),
+              tabPanel("Model Prediction")
+            )),
+    tabItem(tabName = "data")
   )
 )
 
