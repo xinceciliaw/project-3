@@ -197,8 +197,160 @@ body <- dashboardBody(
                        br(),
                        h3("Random Forest Model"),
                        h4("bllaaa")),
-              tabPanel("Model Fitting"),
-              tabPanel("Model Prediction")
+              tabPanel("Model Fitting",
+                       fluidRow(
+                         column(3,
+                                box(width = 12, 
+                                    title = "Modeling", 
+                                    status = "primary", 
+                                    solidHeader = TRUE, 
+                                    collapsible = TRUE,
+                                    sliderInput("trainset",
+                                                "Training Data set",
+                                                min = 10, max = 100, step = 10, value = 20),
+                                    checkboxGroupInput(
+                                      "select_predictor",
+                                      "Select Predictor Variables",
+                                      choices = c("Breastfeeding Initiation" = "bf_pct",
+                                                  "Infant Mortality" = "im_rate",
+                                                  "IBCLC" = "ibclc_rate",
+                                                  "La Leche League" = "la_leche_in_count",
+                                                  "Baby-Friendly Hospital" = "baby_friendly_in_count",
+                                                  "WIC program site" = "wic_site_in_count",
+                                                  "Rural-Urban Continuum Code" = "rucc",
+                                                  "Social Vulnerability Index" = "svi"),
+                                      selected = list("Breastfeeding Initiation" = "bf_pct",
+                                                      "IBCLC" = "ibclc_rate")
+                                    )
+                                    ),
+                                box(width = 12, 
+                                    title = "Model Type", 
+                                    status = "primary", 
+                                    solidHeader = TRUE, 
+                                    collapsible = TRUE,
+                                    checkboxInput(
+                                      inputId = "model_mlr",
+                                      label = "Multiple Linear Regression",
+                                      value = TRUE),
+                                    conditionalPanel(
+                                      condition = "input.model_mlr == 1",
+                                      checkboxInput(inputId = "var_interact", 
+                                                    label = "Interact Variables", 
+                                                    value = FALSE)),
+                                    checkboxInput(inputId = "model_regtree",
+                                                  label = "Regression Tree",
+                                                  value = TRUE),
+                                    conditionalPanel(
+                                      condition = "input.model_regtree == 1",
+                                      numericInput("cp",
+                                                   "Complexity Parameter",
+                                                   value = 0.01,
+                                                   min = 0.001, max = 0.02, 
+                                                   step = 0.005)),
+                                    checkboxInput(inputId = "model_rf",
+                                                  label = "Random Forest",
+                                                  value = TRUE),
+                                    conditionalPanel(
+                                      condition = "input.model_rf == 1",
+                                      sliderInput(inputId = "mtry",
+                                                  label = "mtry",
+                                                  min = 1, max = 6, value = 2, 
+                                                  step = 1)),
+                                    conditionalPanel(
+                                      condition = "(input.model_mlr | input.model_regtree | input.model_rf) == 1",
+                                      checkboxInput(inputId = "cv",
+                                                    label = "Cross Validation",
+                                                    value = TRUE),
+                                      conditionalPanel(
+                                        condition = "input.cv == 1",
+                                        sliderInput(inputId = "folds",
+                                                    label = "Folds",
+                                                    min = 2, max = 10, value = 5))
+                                    )
+                                    ),
+                                box(width = 12,
+                                    actionButton(inputId = "submit_models",
+                                                 label = "Fit on Training Set"))
+                                ), #finish col3
+                         column(9,
+                                box(width = 12,
+                                    status = "primary",
+                                    h3("Training Data RMSE"),
+                                    h4("Compare the root mean squared error (RMSE) value for each model, the model with the lowest RMSE value is the optimal model."),
+                                    tableOutput(outputId = "rmse_training_all_model")), # end box
+                                box(width = 12, 
+                                    solidHeader = TRUE, 
+                                    collapsible = TRUE,
+                                    title = "Training Data Outputs",
+                                    h4("Multiple Linear Regression"),
+                                    verbatimTextOutput("result_training_mlr"),
+                                    h4("Regression Tree"),
+                                    verbatimTextOutput("result_training_tree"),
+                                    h4("Random Forest"),
+                                    verbatimTextOutput("result_training_rf")),# end box
+                                br(),
+                                h3("Variable Importance Measure"),
+                                h4("Random Forest"),
+                                conditionalPanel(
+                                  condition = "input.model_rf == 1",
+                                  plotOutput(outputId = "summary_rf")
+                                ),
+                                box(width = 12, 
+                                    status = "primary",
+                                    h3("Test Data RMSE"),
+                                    tableOutput(outputId = "rmse_test_all_model")) # end box
+
+                                )
+                       )),
+              tabPanel("Model Prediction",
+                       fluidRow(
+                         column(4,
+                                box(width = 12,
+                                    title = "Predict Breastfeeding Initiation Rate",
+                                    solidHeader = TRUE,
+                                    numericInput(inputId = "predict_ibclc",
+                                                 label = "IBCLC (per 1K)",
+                                                 value = 5.5,
+                                                 min = 0, max = 46.7),
+                                    numericInput(inputId = "predict_la_leche",
+                                                 label = "La Leche League (count)",
+                                                 value = 2,
+                                                 min = 0, max = 11),
+                                    numericInput(inputId = "predict_babyhospital",
+                                                 label = "Baby-Friendly Hospital (count)",
+                                                 value = 1,
+                                                 min = 0, max = 7),
+                                    numericInput(inputId = "predict_wic",
+                                                 label = "WIC program site (count)",
+                                                 value = 2,
+                                                 min = 0, max = 15),
+                                    numericInput(inputId = "predict_rucc",
+                                                 label = "Rural-Urban Continuum Code",
+                                                 value = 3,
+                                                 min = 1, max = 9),
+                                    numericInput(inputId = "predict_svi",
+                                                 label = "Social Vulnerability Index",
+                                                 value = 3,
+                                                 min = 3.54, max = 99.4),
+                                    selectInput(
+                                      inputId = "predict_select_model",
+                                      label = "Select Model for Prediction",
+                                      choices = c("Multiple Linear Regression",
+                                                  "Regression Tree",
+                                                  "Random Forest"),
+                                      selected = "Multiple Linear Regression"),
+                                    actionButton(
+                                      inputId = "submit_predict",
+                                      label = "Make Prediction")
+
+                                ) #end box
+                                ),
+                                column(8,
+                                       box(width = 12,
+                                           h3("Prediction Result"),
+                                           tableOutput(outputId = "predict_value_table"))
+                                )
+                       ))
             )),
     tabItem(tabName = "data",
             fluidRow(
