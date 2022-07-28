@@ -1,33 +1,39 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
 
+library(shinydashboard)
 library(shiny)
 
-# Define UI for application that draws a histogram
-shinyUI(fluidPage(
+# create sidebar 
+sidebar <- dashboardSidebar(
+  sidebarMenu(
+    menuItem("About", tabName = "about"),
+    menuItem("Data Exploration", tabName = "explore"),
+    menuItem("Modeling", tabName = "modeling"),
+    menuItem("Data", tabName = "data")
+  )
+)
 
-    # Application title
-    titlePanel("title"),
+# create body
+body <- dashboardBody(
+  tabItems(
+    tabItem(tabName = "about",
+            tabsetPanel(
+              tabPanel("Purpose",
+                       h3("The purpose of the app is to explore breastfeeding data, which allow users to: "),
+                       h4(tags$ul(
+                         tags$li("Do data exploration"), 
+                         tags$li("Fit three supervised learning models"), 
+                         tags$li("Use one of the models for prediction")))
+              ),
+              tabPanel("Introduction"),
+              tabPanel("Data"),
+              tabPanel("Image",
+                       img(src = "picture.jpeg", width = "80%"))
+              
+              ))))
 
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
-        )
-    )
-))
+dashboardPage(
+  dashboardHeader(title = "Breastfeeding Data Analysis",
+                  titleWidth = 360),
+  sidebar,
+  body
+)
