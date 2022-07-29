@@ -121,7 +121,284 @@ shinyServer(function(input, output, session) {
       datatable(numerical_summary_output, options = list(scrollX = T))
     }) #end tables
     
+    #start training and test
+    train_test_data <- reactive({
+      set.seed(1)
+      train <- sample(1:nrow(dat), size = nrow(dat)*(as.numeric(input$trainset)/100))
+      test <- dplyr::setdiff(1:nrow(dat), train)
+      training_data <- dat[train, ]
+      test_data <- dat[test, ]
+      
+      return(list("training_data"=training_data,"test_data"=test_data))
+      
+    }) #end training & test data set
     
+    # update mtry
+    observe({
+      updateSliderInput(session, inputId = "mtry", value = length(input$select_predictor))
+    })
+    
+    #tuning 
+    modeling_parameters <- reactive({
+      
+      # create formula for modeling
+      if(input$model_mlr == 1 ) {
+        predictors <- paste(input$select_predictor, collapse = "+")
+      } 
+      response <- paste("bf_pct")
+      formula <- as.formula(paste(response,"~",predictors))
+      
+      # cv
+      trControl <-  trainControl(method = "cv", number = input$folds)
+      
+      # tuning grid
+      tree_grid <- data.frame(cp = 0.001:(input$cp))
+      rf_grid <- data.frame(mtry = 1:(input$mtry))
+      
+      return(list("formula"=formula, "trControl"=trControl, "tree_grid"=tree_grid, "rf_grid"=rf_grid))
+      
+    })
+    
+    # multiple linear regression
+    
+    # model multiple linear regression
+    fit_mlr <- eventReactive(input$submit_models, {
+      modeling_parameters <- modeling_parameters()
+      train_test_data <- train_test_data()
+      if(input$model_mlr==1) {
+        fit_mlr_model <- train(modeling_parameters[["formula"]],
+                               data = train_test_data[["training_data"]],
+                               method = "lm",
+                               preProcess = c("center", "scale"),
+                               trControl = modeling_parameters[["trControl"]])
+        predict_mlr <- postResample(predict(fit_mlr_model, newdata = train_test_data[["test_data"]]), 
+                                    obs = train_test_data[["test_data"]]$bf_pct)
+        return(list("fit_mlr_train"=fit_mlr_model, "fit_mlr_test"=predict_mlr))
+      }  
+    })
+    
+    rmse_training_mlr <- reactive({
+      fit_mlr <- fit_mlr()
+      fit_mlr_rmse <- fit_mlr[["fit_mlr_train"]]$results["RMSE"] %>% min() %>% as.data.frame()
+      colnames(fit_mlr_rmse) <- "RMSE"
+      rownames(fit_mlr_rmse) <- "Multiple Linear Regression"
+      fit_mlr_rmse
+    })
+    
+    output$rmse_training_mlr <- renderPrint({
+      rmse_training_mlr <- rmse_training_mlr()
+      rmse_training_mlr
+    })
+    
+    output$result_training_mlr <- renderPrint({
+      fit_mlr <- fit_mlr()
+      fit_mlr[["fit_mlr_train"]]
+    })
+    
+    rmse_testing_mlr <- reactive({
+      fit_mlr <- fit_mlr()
+      mlr_test_rmse <- fit_mlr[["fit_mlr_test"]]["RMSE"] %>% min() %>% as.data.frame()
+      colnames(mlr_test_rmse) <- "RMSE"
+      rownames(mlr_test_rmse) <- "Multiple Linear Regression"
+      mlr_test_rmse
+    })
+    
+    output$rmse_testing_mlr <- renderPrint({
+      rmse_testing_mlr <- rmse_testing_mlr()
+      rmse_testing_mlr
+    })
+    
+    output$result_testing_mlr <- renderPrint({
+      fit_mlr <- fit_mlr()
+      fit_mlr[["fit_mlr_test"]]
+    })
+    
+    
+    # regression tree
+    # model regression tree
+    fit_tree <- eventReactive(input$submit_models, {
+      modeling_parameters <- modeling_parameters()
+      train_test_data <- train_test_data()
+      if(input$model_regtree==1) {
+        fit_tree_model <- train(modeling_parameters[["formula"]],
+                                data = train_test_data[["training_data"]],
+                                method = "rpart",
+                                preProcess = c("center", "scale"),
+                                trControl = modeling_parameters[["trControl"]],
+                                tuneGrid = modeling_parameters[["tree_grid"]])
+        predict_tree <- postResample(predict(fit_tree_model, newdata = train_test_data[["test_data"]]), 
+                                     obs = train_test_data[["test_data"]]$bf_pct)
+        return(list("fit_tree_train"=fit_tree_model, "fit_tree_test"=predict_tree))
+      }  
+    })
+    
+    rmse_training_tree <- reactive({
+      fit_tree <- fit_tree()
+      fit_tree[["fit_tree_train"]]
+      fit_tree_rmse <- fit_tree[["fit_tree_train"]]$results["RMSE"] %>% min() %>% as.data.frame()
+      colnames(fit_tree_rmse) <- "RMSE"
+      rownames(fit_tree_rmse) <- "Regression Tree"
+      fit_tree_rmse
+    })
+    
+    output$rmse_training_tree <- renderPrint({
+      rmse_training_tree <- rmse_training_tree()
+      rmse_training_tree
+    })
+    
+    output$result_training_tree <- renderPrint({
+      fit_tree <- fit_tree()
+      fit_tree[["fit_tree_train"]]
+    })
+    
+    rmse_testing_tree <- reactive({
+      fit_tree <- fit_tree()
+      tree_test_rmse <- fit_tree[["fit_tree_test"]]["RMSE"] %>% min() %>% as.data.frame()
+      colnames(tree_test_rmse) <- "RMSE"
+      rownames(tree_test_rmse) <- "Regression Tree"
+      tree_test_rmse
+    })
+    
+    output$rmse_testing_tree <- renderPrint({
+      rmse_testing_tree <- rmse_testing_tree()
+      rmse_testing_tree
+    })
+    
+    output$result_testing_tree <- renderPrint({
+      fit_tree <- fit_tree()
+      fit_tree[["fit_tree_test"]]
+    })
+    
+    # random forest
+    # model random forest
+    fit_rf <- eventReactive(input$submit_models, {
+      modeling_parameters <- modeling_parameters()
+      train_test_data <- train_test_data()
+      if(input$model_rf==1) {
+        fit_rf_model <- train(modeling_parameters[["formula"]],
+                              data = train_test_data[["training_data"]],
+                              method = "rf",
+                              preProcess = c("center", "scale"),
+                              trControl = modeling_parameters[["trControl"]],
+                              tuneGrid = modeling_parameters[["rf_grid"]])
+        predict_rf <- postResample(predict(fit_rf_model, newdata = train_test_data[["test_data"]]), 
+                                   obs = train_test_data[["test_data"]]$bf_pct)
+        return(list("fit_rf_train"=fit_rf_model, "fit_rf_test"=predict_rf))
+      }  
+    })
+    
+    rmse_training_rf <- reactive({
+      fit_rf <- fit_rf()
+      fit_rf[["fit_rf_train"]]
+      fit_rf_rmse <- fit_rf[["fit_rf_train"]]$results["RMSE"] %>% min() %>% as.data.frame()
+      colnames(fit_rf_rmse) <- "RMSE"
+      rownames(fit_rf_rmse) <- "Random Forest"
+      fit_rf_rmse
+    })
+    
+    output$rmse_training_rf <- renderPrint({
+      rmse_training_rf <- rmse_training_rf()
+      rmse_training_rf
+    })
+    
+    output$result_training_rf <- renderPrint({
+      fit_rf <- fit_rf()
+      fit_rf[["fit_rf_train"]]
+    })  
+    
+    rmse_testing_rf <- reactive({
+      fit_rf <- fit_rf()
+      rf_test_rmse <- fit_rf[["fit_rf_test"]]["RMSE"] %>% min() %>% as.data.frame()
+      colnames(rf_test_rmse) <- "RMSE"
+      rownames(rf_test_rmse) <- "Random Forest"
+      rf_test_rmse
+    })  
+    
+    output$rmse_testing_rf <- renderPrint({
+      rmse_testing_rf <- rmse_testing_rf()
+      rmse_testing_rf
+    })  
+    
+    output$result_testing_rf <- renderPrint({
+      fit_rf <- fit_rf()
+      fit_rf[["fit_rf_test"]]
+    })  
+    
+    # training rmse info for all models
+    output$rmse_training_all_model <- renderTable({
+      rmse_training_mlr <- rmse_training_mlr()
+      rmse_training_tree <- rmse_training_tree()
+      rmse_training_rf <- rmse_training_rf()
+      table <- rbind(rmse_training_mlr, rmse_training_tree, rmse_training_rf)
+      table$Model <- c("Multiple Linear Regression", "Regression Tree", "Random Forest")
+      table %>% select(Model, RMSE)
+    })
+    
+    # test rmse info for all models
+    output$rmse_test_all_model <- renderTable({
+      rmse_testing_mlr <- rmse_testing_mlr()
+      rmse_testing_tree <- rmse_testing_tree()
+      rmse_testing_rf <- rmse_testing_rf()
+      table <- rbind(rmse_testing_mlr, rmse_testing_tree, rmse_testing_rf)
+      table$Model <- c("Multiple Linear Regression", "Regression Tree", "Random Forest")
+      table %>% select(Model, RMSE)
+    })
+    
+    #importance plot
+    rf_plot <- eventReactive(input$submit_models, {
+      train_test_data <- train_test_data()
+      predictors <- paste(input$select_predictor, collapse = "+")
+      response <- paste("bf_pct")
+      formula <- as.formula(paste(response,"~",predictors))
+      Variance.Importance.Dotchart <- randomForest(formula, 
+                                                   data = train_test_data[["training_data"]], 
+                                                   mtry = 1:(input$mtry),
+                                                   importance = TRUE)
+      varImpPlot(Variance.Importance.Dotchart)
+    })
+    
+    output$summary_rf<- renderPlot({
+      rf_plot <- rf_plot()
+    })
+    
+    # prediction
+    prediction_result <- eventReactive(input$submit_predict, {
+      ibclc_rate <- input$predict_ibclc
+      la_leche_count <- input$predict_la_leche
+      baby_friendly_count <- input$predict_babyhospital
+      wic_site_count <- input$predict_wic
+      rucc <- input$predict_rucc
+      svi <- input$predict_svi
+ 
+      predict_data <- as.data.frame(cbind(ibclc_rate,
+                                          la_leche_count,
+                                          baby_friendly_count,
+                                          wic_site_count,
+                                          rucc,
+                                          svi))
+      fit_mlr <- fit_mlr()
+      fit_tree <- fit_tree()
+      fit_rf <- fit_rf()
+      if(input$predict_select_model=="Multiple Linear Regression"){
+        predict_result <- predict(fit_mlr[["fit_mlr_train"]],
+                                  newdata = predict_data) %>% round(3)
+      } else if(input$predict_select_model=="Regression Tree") {
+        predict_result <- predict(fit_tree[["fit_tree_train"]],
+                                  newdata = predict_data) %>% round(3)
+      } else if(input$predict_select_model=="Random Forest") {
+        predict_result <- predict(fit_rf[["fit_rf_train"]],
+                                  newdata = predict_data) %>% round(3)
+      }
+      return(list("Model Prediction" = predict_result))
+      
+    })
+    
+    output$predict_value_table <- renderTable({
+      prediction_result <- prediction_result()
+      as.data.frame(prediction_result)
+    })
+    
+      
 })
 
 
