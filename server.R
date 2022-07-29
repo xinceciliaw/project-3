@@ -384,7 +384,7 @@ shinyServer(function(input, output, session) {
     
     output$predict_value_table <- renderTable({
       prediction_result <- prediction_result()
-      as.data.frame(prediction_result)
+      print(prediction_result)
     })
     
       
