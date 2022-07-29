@@ -173,7 +173,8 @@ shinyServer(function(input, output, session) {
                                trControl = modeling_parameters[["trControl"]])
         predict_mlr <- postResample(predict(fit_mlr_model, newdata = train_test_data[["test_data"]]), 
                                     obs = train_test_data[["test_data"]]$bf_pct)
-        return(list("fit_mlr_train"=fit_mlr_model, "fit_mlr_test"=predict_mlr))
+        sum_mlr <- summary(fit_mlr_model)
+        return(list("fit_mlr_train"=fit_mlr_model, "fit_mlr_test"=predict_mlr, "fit_sum_mlr" = sum_mlr ))
       }  
     })
     
@@ -192,7 +193,7 @@ shinyServer(function(input, output, session) {
     
     output$result_training_mlr <- renderPrint({
       fit_mlr <- fit_mlr()
-      fit_mlr[["fit_mlr_train"]]
+      fit_mlr[["fit_sum_mlr"]]
     })
     
     rmse_testing_mlr <- reactive({
@@ -206,11 +207,6 @@ shinyServer(function(input, output, session) {
     output$rmse_testing_mlr <- renderPrint({
       rmse_testing_mlr <- rmse_testing_mlr()
       rmse_testing_mlr
-    })
-    
-    output$result_testing_mlr <- renderPrint({
-      fit_mlr <- fit_mlr()
-      fit_mlr[["fit_mlr_test"]]
     })
     
     
@@ -228,7 +224,8 @@ shinyServer(function(input, output, session) {
                                 tuneGrid = modeling_parameters[["tree_grid"]])
         predict_tree <- postResample(predict(fit_tree_model, newdata = train_test_data[["test_data"]]), 
                                      obs = train_test_data[["test_data"]]$bf_pct)
-        return(list("fit_tree_train"=fit_tree_model, "fit_tree_test"=predict_tree))
+        sum_tree <- summary(fit_tree_model)
+        return(list("fit_tree_train"=fit_tree_model, "fit_tree_test"=predict_tree, "fit_sum_tree" = sum_tree ))
       }  
     })
     
@@ -248,7 +245,7 @@ shinyServer(function(input, output, session) {
     
     output$result_training_tree <- renderPrint({
       fit_tree <- fit_tree()
-      fit_tree[["fit_tree_train"]]
+      fit_tree[["fit_sum_tree"]]
     })
     
     rmse_testing_tree <- reactive({
@@ -264,10 +261,6 @@ shinyServer(function(input, output, session) {
       rmse_testing_tree
     })
     
-    output$result_testing_tree <- renderPrint({
-      fit_tree <- fit_tree()
-      fit_tree[["fit_tree_test"]]
-    })
     
     # random forest
     # model random forest
@@ -281,9 +274,9 @@ shinyServer(function(input, output, session) {
                               preProcess = c("center", "scale"),
                               trControl = modeling_parameters[["trControl"]],
                               tuneGrid = modeling_parameters[["rf_grid"]])
-        predict_rf <- postResample(predict(fit_rf_model, newdata = train_test_data[["test_data"]]), 
-                                   obs = train_test_data[["test_data"]]$bf_pct)
-        return(list("fit_rf_train"=fit_rf_model, "fit_rf_test"=predict_rf))
+        predict_rf <- postResample(predict(fit_rf_model, newdata = train_test_data[["test_data"]]), obs = train_test_data[["test_data"]]$bf_pct)
+        sum_rf <- summary(fit_rf_model)
+        return(list("fit_rf_train"=fit_rf_model, "fit_rf_test"=predict_rf, "fit_sum_rf" = sum_rf ))
       }  
     })
     
@@ -303,7 +296,7 @@ shinyServer(function(input, output, session) {
     
     output$result_training_rf <- renderPrint({
       fit_rf <- fit_rf()
-      fit_rf[["fit_rf_train"]]
+      fit_rf[["fit_sum_rf"]]
     })  
     
     rmse_testing_rf <- reactive({
@@ -319,10 +312,6 @@ shinyServer(function(input, output, session) {
       rmse_testing_rf
     })  
     
-    output$result_testing_rf <- renderPrint({
-      fit_rf <- fit_rf()
-      fit_rf[["fit_rf_test"]]
-    })  
     
     # training rmse info for all models
     output$rmse_training_all_model <- renderTable({

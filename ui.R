@@ -232,7 +232,7 @@ body <- dashboardBody(
             )),
     tabItem(tabName = "modeling",
             tabsetPanel(
-              tabPanel("Model Introduction",
+              tabPanel("Modeling Info",
                        h3("Multiple Linear Regression Model"),
                        h4("blablabla"),
                        br(),
@@ -317,7 +317,7 @@ body <- dashboardBody(
                                 box(width = 12, 
                                     solidHeader = TRUE, 
                                     collapsible = TRUE,
-                                    title = "Training Data Outputs",
+                                    title = "Training Data Summaries",
                                     h4("Multiple Linear Regression"),
                                     verbatimTextOutput("result_training_mlr"),
                                     h4("Regression Tree"),
@@ -338,7 +338,7 @@ body <- dashboardBody(
 
                                 )
                        )),
-              tabPanel("Model Prediction",
+              tabPanel("Prediction",
                        fluidRow(
                          column(4,
                                 box(width = 12,
