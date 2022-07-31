@@ -11,9 +11,7 @@ install.packages(c("shiny",
                    "tree", 
                    "randomForest", 
                    "tidyverse"))
-```
-
-```
+                   
 library(shinydashboard)
 library(shiny)
 library(DT)
