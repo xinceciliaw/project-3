@@ -31,10 +31,10 @@ body <- dashboardBody(
                        h4("The About page describes the purpose of the app, and introduces the data used for the analysis."),
                        br(),
                        h3("Data Exploration"),
-                       h4("allow users to create numerical and graphical summaries, blabla"),
+                       h4("The Data Exploration page allow users to create and change numerical and graphical summaries, such as: change the type of plot shown and type of summary reported and change the variables and filter the rows to change the data in the plots/summaries."),
                        br(),
                        h3("Modeling"),
-                       h4("blabla"),
+                       h4("The Modeling page allow users to select from three models, change varibles/tuning parameters for fitting, and use the model to make prediction "),
                        br(),
                        h3("Data"),
                        h4("The Data page allow users to scroll through the data set, subset the data set and download the subsetted data as a csv file.")
@@ -42,7 +42,7 @@ body <- dashboardBody(
                        ),
               tabPanel("Data",
                        h3("Data Introduction"),
-                       h4("blabla"),
+                       h4("The data consist of county-level characteristics for North Carolina and Georgia counties drawn from a variety of online sources. It has 259 observations, two response variables: breastfeeding initiation rate and infant mortality rate, 6 predictor variables: IBCLC, La Leche League group, Baby-Friendly Hospital, WIC program site, Rural-Urban Continuum Code and Social Vulnerability Index. For modeling and prediction, we will only look at the response variable of breastfeeding initiation rate."),
                        br(),
                        h3("Variables and Sources"),
                        h4(tags$ul(
